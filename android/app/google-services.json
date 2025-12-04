@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "503736540594",
+    "project_id": "cinewall-6221d",
+    "storage_bucket": "cinewall-6221d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503736540594:android:4b21992af04d5cb47e18ab",
+        "android_client_info": {
+          "package_name": "com.example.cinemawall"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBrC3IGRIxT5pEFqJcKTYkNA69lfJ8iMRM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
