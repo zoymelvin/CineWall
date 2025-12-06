@@ -1,7 +1,8 @@
-import 'package:cinemawall/ui/screens/search/search_screen.dart';
 import 'package:flutter/material.dart';
-import '../feed/movie_feed_screen.dart';
 import '../../widgets/glass_bottom_nav.dart';
+import '../feed/movie_feed_screen.dart';
+import '../search/search_screen.dart';
+import '../watchlist/watchlist_screen.dart';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -13,11 +14,11 @@ class MainWrapper extends StatefulWidget {
 class _MainWrapperState extends State<MainWrapper> {
   int _currentIndex = 0;
 
-  // Daftar Halaman
+  // DAFTAR HALAMAN (Pages)
   final List<Widget> _pages = [
-    const MovieFeedScreen(),        // Halaman 0: Feed Film
-    const SearchScreen(),
-    const Center(child: Text("Watchlist Page", style: TextStyle(color: Colors.white))), // Halaman 2: Dummy dulu
+    const MovieFeedScreen(),  
+    const SearchScreen(),     
+    const WatchlistScreen(),  
   ];
 
   @override
@@ -26,12 +27,13 @@ class _MainWrapperState extends State<MainWrapper> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // LAYER 1: Halaman Konten (Full Screen)
-          _pages[_currentIndex],
+          IndexedStack(
+            index: _currentIndex,
+            children: _pages,
+          ),
 
-          // LAYER 2: Navbar Melayang (Paling Bawah)
           Positioned(
-            bottom: 20, // Jarak dari lantai layar
+            bottom: 20,
             left: 20,
             right: 20,
             child: GlassBottomNav(

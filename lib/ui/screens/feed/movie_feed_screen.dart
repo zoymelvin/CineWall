@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../../providers/movie_provider.dart';
+import '../../../services/tmdb_service.dart';
+import '../../../models/movie_model.dart';
 import '../../widgets/movie_item_full.dart';
 
 class MovieFeedScreen extends StatefulWidget {
@@ -11,77 +11,69 @@ class MovieFeedScreen extends StatefulWidget {
 }
 
 class _MovieFeedScreenState extends State<MovieFeedScreen> {
-  // Controller untuk PageView
+  final TmdbService _tmdbService = TmdbService();
   final PageController _pageController = PageController();
+  
+  List<Movie> _movies = []; // Data film disimpan disini
+  bool _isLoading = false;
+  String? _errorMessage;
+  int _currentPage = 1;
 
   @override
   void initState() {
     super.initState();
-    // Panggil data pertama kali saat aplikasi dibuka
-    // Kita pakai addPostFrameCallback agar aman dipanggil di initState
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MovieProvider>().fetchMovies();
-    });
+    _fetchMovies();
   }
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  Future<void> _fetchMovies() async {
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      
+      final newMovies = await _tmdbService.getPopularMovies(page: _currentPage);
+      
+      setState(() {
+        _movies.addAll(newMovies); 
+        _currentPage++; 
+        _isLoading = false; 
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+
+    if (_movies.isEmpty && _isLoading) {
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
+    }
+
+    if (_movies.isEmpty && _errorMessage != null) {
+      return Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.white)));
+    }
+
     return Scaffold(
-      backgroundColor: Colors.black, // Dasar hitam
-      
-      // Consumer mendengarkan perubahan data di MovieProvider
-      body: Consumer<MovieProvider>(
-        builder: (context, provider, child) {
-          
-          // 1. Jika Data Kosong & Sedang Loading Awal -> Tampilkan Loading Tengah
-          if (provider.movies.isEmpty && provider.isLoading) {
-            return const Center(child: CircularProgressIndicator(color: Colors.red));
-          }
+      backgroundColor: Colors.black,
+      body: PageView.builder(
+        controller: _pageController,
+        scrollDirection: Axis.vertical,
+        itemCount: _movies.length,
+        onPageChanged: (index) {
 
-          // 2. Jika Error -> Tampilkan Pesan Error
-          if (provider.errorMessage != null && provider.movies.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.red, size: 50),
-                  const SizedBox(height: 10),
-                  Text(provider.errorMessage!, style: const TextStyle(color: Colors.white)),
-                  ElevatedButton(
-                    onPressed: () => provider.fetchMovies(isRefresh: true),
-                    child: const Text("Coba Lagi"),
-                  )
-                ],
-              ),
-            );
+          if (index >= _movies.length - 2) {
+            _fetchMovies();
           }
-
-          // 3. Jika Data Ada -> Tampilkan PAGEVIEW (Vertical Cinema)
-          return PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical, // RAHASIA TIKTOK STYLE
-            itemCount: provider.movies.length,
-            
-            // Logic Infinite Scroll ada disini:
-            onPageChanged: (index) {
-              // Jika user sudah sampai di 3 item terakhir...
-              if (index >= provider.movies.length - 3) {
-                // ...Panggil provider untuk ambil halaman berikutnya
-                provider.fetchMovies();
-              }
-            },
-            
-            itemBuilder: (context, index) {
-              final movie = provider.movies[index];
-              return MovieItemFull(movie: movie);
-            },
-          );
+        },
+        itemBuilder: (context, index) {
+          return MovieItemFull(movie: _movies[index]);
         },
       ),
     );

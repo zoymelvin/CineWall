@@ -6,16 +6,13 @@ import '../models/movie_model.dart';
 class TmdbService {
   final Dio _dio = DioClient().dio;
 
-  // Fungsi ambil film popular dengan Pagination
   Future<List<Movie>> getPopularMovies({int page = 1}) async {
     try {
-      // Request ke endpoint /movie/popular
       final response = await _dio.get(
         '/movie/popular',
         queryParameters: {'page': page},
       );
 
-      // Cek hasil (Parsing JSON)
       final List results = response.data['results'];
       return results.map((json) => Movie.fromJson(json)).toList();
 
@@ -35,21 +32,20 @@ class TmdbService {
     }
   }
   Future<List<Movie>> searchMovies(String query) async {
-    if (query.isEmpty) return []; // Jangan cari kalau kosong
+    if (query.isEmpty) return []; 
 
     try {
       final response = await _dio.get(
         '/search/movie',
         queryParameters: {
-          'query': query, // Kata kunci pencarian
-          'include_adult': false, // Saring konten dewasa
+          'query': query,
+          'include_adult': false,
         },
       );
 
       final List results = response.data['results'];
       return results.map((json) => Movie.fromJson(json)).toList();
     } catch (e) {
-      // Kita pakai error handling yang sama
       throw e; 
     }
   }

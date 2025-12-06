@@ -19,16 +19,11 @@ class GlassBottomNav extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(30), 
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15), // Blur dinaikkan biar makin nge-blur
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(
-            // HAPUS bagian 'color:' yang lama, ganti dengan decoration ini:
             decoration: BoxDecoration(
-              // 1. Ganti Hitam jadi PUTIH tipis (biar kayak kaca kena cahaya)
-              color: Colors.white.withOpacity(0.1), 
-              
+              color: Colors.white.withOpacity(0.1),            
               borderRadius: BorderRadius.circular(30),
-              
-              // 2. Tambahkan Border Putih Tipis (PENTING biar kelihatan batasnya)
               border: Border.all(
                 color: Colors.white.withOpacity(0.2), 
                 width: 1.5,
@@ -62,7 +57,6 @@ class GlassBottomNav extends StatelessWidget {
             size: 26,
           ),
           const SizedBox(height: 4),
-          // Titik kecil indikator kalau aktif (Gaya minimalis)
         ],
       ),
     );

@@ -12,17 +12,15 @@ class MovieDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212), // Hitam pekat
+      backgroundColor: const Color(0xFF121212),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. GAMBAR SAMPUL BESAR (SATU FOTO SAJA)
             Stack(
               children: [
-                // Foto Poster Tinggi
                 SizedBox(
-                  height: 500, // Mengambil separuh lebih layar
+                  height: 500, 
                   width: double.infinity,
                   child: CachedNetworkImage(
                     imageUrl: '${ApiConstants.imageOriginalUrl}${movie.posterPath}',
@@ -31,23 +29,23 @@ class MovieDetailScreen extends StatelessWidget {
                     errorWidget: (context, url, error) => const Icon(Icons.error),
                   ),
                 ),
-                // Efek Gradasi (Supaya foto menyatu dengan body hitam)
+
                 Positioned.fill(
                   child: Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
                           Colors.transparent,
-                          Color(0xFF121212), // Warna sama dengan background Scaffold
+                          Color(0xFF121212), 
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        stops: [0.6, 1.0], // Mulai gelap di 60% ke bawah
+                        stops: [0.6, 1.0],
                       ),
                     ),
                   ),
                 ),
-                // Tombol Back (Kembali) di atas kiri
+
                 Positioned(
                   top: 50,
                   left: 20,
@@ -66,7 +64,6 @@ class MovieDetailScreen extends StatelessWidget {
               ],
             ),
 
-            // 2. KONTEN DETAIL (DATA FILM)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
@@ -84,10 +81,8 @@ class MovieDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
 
-                  // Tagline / Tahun & Rating
                   Row(
                     children: [
-                      // Badge Tahun
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
@@ -95,7 +90,7 @@ class MovieDetailScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(
-                          movie.releaseDate.split('-')[0], // Ambil tahun saja
+                          movie.releaseDate.split('-')[0],
                           style: GoogleFonts.poppins(color: Colors.white70, fontSize: 12),
                         ),
                       ),
@@ -113,9 +108,6 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 25),
 
-                  // GENRES (Manual Layout biar rapi)
-                  // Note: Data genre butuh fetch detail, sementara kita hardcode visualnya
-                  // agar sesuai request "Tampilkan Genre" (Nanti kita update logikanya)
                   Wrap(
                     spacing: 10,
                     children: [
@@ -127,7 +119,6 @@ class MovieDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 30),
 
-                  // SINOPSIS (Overview)
                   Text(
                     "Storyline",
                     style: GoogleFonts.poppins(
@@ -140,13 +131,12 @@ class MovieDetailScreen extends StatelessWidget {
                   Text(
                     movie.overview,
                     style: GoogleFonts.poppins(
-                      color: Colors.grey[400], // Abu terang biar nyaman dibaca
+                      color: Colors.grey[400],
                       fontSize: 15,
-                      height: 1.8, // Spasi antar baris lebar
+                      height: 1.8,
                     ),
                   ),
-                  
-                  // Ruang kosong di bawah biar scroll enak
+
                   const SizedBox(height: 50),
                 ],
               ),
@@ -157,7 +147,6 @@ class MovieDetailScreen extends StatelessWidget {
     );
   }
 
-  // Widget kecil untuk Genre
   Widget _buildGenreChip(String label) {
     return Chip(
       label: Text(label),

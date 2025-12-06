@@ -9,7 +9,6 @@ class UserModel {
     required this.name,
   });
 
-  // Konversi dari Firebase User ke UserModel kita
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] ?? '',

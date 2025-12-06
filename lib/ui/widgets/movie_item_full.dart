@@ -2,6 +2,8 @@ import 'package:cinemawall/ui/screens/detail/movie_detail_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/api_constants.dart';
 import '../../models/movie_model.dart';
 
@@ -12,47 +14,36 @@ class MovieItemFull extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Gabungkan Base URL dengan path poster
     final imageUrl = movie.posterPath.isNotEmpty
         ? '${ApiConstants.imageOriginalUrl}${movie.posterPath}'
         : 'https://via.placeholder.com/500x750?text=No+Image';
 
-    // 1. BUNGKUS DENGAN GESTURE DETECTOR
-    // Agar saat user klik di mana saja pada gambar, pindah ke halaman detail
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => MovieDetailScreen(movie: movie),
+            
           ),
         );
       },
       child: Stack(
         children: [
-          // LAYER 1: Gambar Poster Fullscreen
           Positioned.fill(
             child: CachedNetworkImage(
               imageUrl: imageUrl,
-              fit: BoxFit.cover, // Gambar memenuhi layar
-              placeholder: (context, url) => Container(
-                color: const Color(0xFF121212),
-                child: const Center(child: CircularProgressIndicator(color: Colors.red)),
-              ),
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(color: Colors.grey[900]),
               errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ),
 
-          // LAYER 2: Gradient Overlay (Agar teks terbaca)
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.black,        // Bawah: Hitam Pekat
-                    Colors.black54,      // Tengah Bawah: Agak Gelap
-                    Colors.transparent,  // Tengah: Transparan
-                  ],
+                  colors: [Colors.black, Colors.transparent],
                   begin: Alignment.bottomCenter,
                   end: Alignment.center,
                 ),
@@ -60,70 +51,41 @@ class MovieItemFull extends StatelessWidget {
             ),
           ),
 
-          // LAYER 3: Informasi Film (Kiri Bawah)
           Positioned(
             left: 20,
-            right: 100, // Jarak kanan lebar agar tidak menabrak tombol aksi
-            bottom: 140, // Jarak bawah tinggi agar tidak tertutup Navbar
+            right: 100,
+            bottom: 140,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Judul Film
                 Text(
                   movie.title,
                   style: GoogleFonts.poppins(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
+                    fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white, height: 1.2
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 10),
-                
-                // Rating & Tahun
                 Row(
                   children: [
-                    // Badge Rating
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5C518), // Kuning IMDb
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.star, size: 14, color: Colors.black),
-                          const SizedBox(width: 4),
-                          Text(
-                            movie.voteAverage.toStringAsFixed(1),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                    const Icon(Icons.star, color: Colors.amber, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      movie.voteAverage.toStringAsFixed(1),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(width: 10),
-                    // Tahun Rilis
                     Text(
-                      movie.releaseDate.split('-')[0], 
-                      style: GoogleFonts.poppins(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      movie.releaseDate.split('-')[0], // Tahun
+                      style: const TextStyle(color: Colors.white70),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-                
-                // Sinopsis Singkat
                 Text(
                   movie.overview,
-                  maxLines: 2, 
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
                     color: Colors.white60,
@@ -135,32 +97,24 @@ class MovieItemFull extends StatelessWidget {
             ),
           ),
 
-          // LAYER 4: Tombol Aksi (Kanan Bawah - Floating)
           Positioned(
             right: 10,
-            bottom: 140, // Sejajar dengan teks
+            bottom: 140,
             child: Column(
               children: [
-                // Tombol Info (Opsional, fungsinya sama dengan tap gambar)
-                _buildActionButton(Icons.info_outline, "Info", () {
-                  Navigator.push(
+                _buildCircleButton(Icons.info_outline, "Info", () {
+                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => MovieDetailScreen(movie: movie),
-                    ),
+                    MaterialPageRoute(builder: (context) => MovieDetailScreen(movie: movie)),
                   );
                 }),
                 const SizedBox(height: 20),
                 
-                // Tombol Watchlist/Love
-                _buildActionButton(Icons.favorite_border, "Save", () {
-                  // Nanti kita isi logic Firebase disini
-                  print("Simpan ke Firebase");
-                }),
-                const SizedBox(height: 20),
+                _LoveButton(movie: movie), 
+                // -------------------------------------------
                 
-                // Tombol Share
-                _buildActionButton(Icons.share, "Share", () {}),
+                const SizedBox(height: 20),
+                _buildCircleButton(Icons.share, "Share", () {}),
               ],
             ),
           ),
@@ -169,8 +123,7 @@ class MovieItemFull extends StatelessWidget {
     );
   }
 
-  // Widget kecil untuk bikin tombol di kanan
-  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
+  Widget _buildCircleButton(IconData icon, String label, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -178,7 +131,7 @@ class MovieItemFull extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.black45, // Background transparan gelap
+              color: Colors.black45,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white24),
             ),
@@ -188,6 +141,75 @@ class MovieItemFull extends StatelessWidget {
           Text(label, style: const TextStyle(color: Colors.white, fontSize: 10)),
         ],
       ),
+    );
+  }
+}
+
+class _LoveButton extends StatelessWidget {
+  final Movie movie;
+  const _LoveButton({required this.movie});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Icon(Icons.favorite_border, color: Colors.grey);
+    }
+
+    final docRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .collection('watchlist')
+        .doc(movie.id.toString());
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: docRef.snapshots(), 
+      builder: (context, snapshot) {
+        
+        // Cek apakah data ada di database?
+        bool isSaved = false;
+        if (snapshot.hasData && snapshot.data!.exists) {
+          isSaved = true;
+        }
+
+        return GestureDetector(
+          onTap: () async {
+            if (isSaved) {
+              await docRef.delete();
+            } else {
+              await docRef.set({
+                'id': movie.id,
+                'title': movie.title,
+                'poster_path': movie.posterPath,
+                'overview': movie.overview,
+                'release_date': movie.releaseDate,
+                'vote_average': movie.voteAverage,
+                'backdrop_path': movie.backdropPath,
+              });
+            }
+          },
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Icon(
+                  isSaved ? Icons.favorite : Icons.favorite_border,
+                  color: isSaved ? Colors.red : Colors.white,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(isSaved ? "Saved" : "Save", style: const TextStyle(color: Colors.white, fontSize: 10)),
+            ],
+          ),
+        );
+      },
     );
   }
 }
